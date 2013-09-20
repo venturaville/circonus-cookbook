@@ -29,7 +29,6 @@ require 'json'
 require 'rest_client'
 require 'uri'
 require 'fileutils'
-require 'cgi'
 
 if RUBY_VERSION =~ /^1\.8/
   class Dir
