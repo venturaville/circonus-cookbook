@@ -29,6 +29,7 @@ require 'json'
 require 'rest_client'
 require 'uri'
 require 'fileutils'
+require 'cgi'
 
 if RUBY_VERSION =~ /^1\.8/
   class Dir
@@ -197,9 +198,13 @@ class Circonus
   #---------------
   [rw_resources, ro_resources].flatten.each do |resource_name| 
     method_name = 'list_' + resource_name + 's'
-    send :define_method, method_name do # TODO - one day maybe be able to take filtering args?
+    send :define_method, method_name do |filter|
+      params = {}
+      if (not filter.nil?) and filter.any?
+        filter.each { |k,v| params["f_#{k}".to_sym] = v }
+      end
       bomb_shelter {
-        JSON.parse(@rest[resource_name].get)
+        JSON.parse(@rest[resource_name].get :params => params)
       }
     end
   end
