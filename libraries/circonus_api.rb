@@ -322,7 +322,11 @@ class Circonus
     unless type.nil? then
       type = type.to_s()
     end
-    cache = load_cache_file('check_bundle_ids')
+    cachefilename = "check_bundle_ids"
+    cachefilename += "-target=#{target}" if target
+    cachefilename += "-type=#{type}" if type
+    cachefilename += "-display_name=#{display_name}" if display_name
+    cache = load_cache_file(cachefilename)
     hits = []
     if cache.key?(target) then 
       if type.nil? then
@@ -365,7 +369,7 @@ class Circonus
       match
     end
 
-    write_cache_file('check_bundle_ids', cache)
+    write_cache_file(cachefilename, cache)
 
     if !display_name.nil? then
       matched_bundles = matched_bundles.select do  |cb|
@@ -378,7 +382,10 @@ class Circonus
   end
 
   def find_broker_id(name)
-    cache = load_cache_file('brokers')
+    cachefilename = "brokers"
+    cachefilename += "-name=#{name}" if name
+
+    cache = load_cache_file(cachefilename)
     if cache.key?(name) then 
       return cache[name]
     end
@@ -392,7 +399,7 @@ class Circonus
       match
     end
 
-    write_cache_file('brokers', cache)
+    write_cache_file(cachefilename, cache)
 
     if matched_brokers.empty? then
       return nil
@@ -405,7 +412,11 @@ class Circonus
   def find_check_id(check_bundle_id, broker_name)
     broker_id = find_broker_id(broker_name)
 
-    cache = load_cache_file('check_ids')
+    cachefilename = "check_ids"
+    cachefilename += "-check_bundle_id=#{check_bundle_id}" if check_bundle_id
+    cachefilename += "-broker_name=#{broker_name}" if broker_name
+
+    cache = load_cache_file(cachefilename)
     if cache[check_bundle_id] && cache[check_bundle_id][broker_id]  then
       return cache[check_bundle_id][broker_id]
     end
@@ -429,14 +440,17 @@ class Circonus
 
     cache[check_bundle_id] ||= {}
     cache[check_bundle_id][broker_id] = check_id
-    write_cache_file('check_ids', cache)
+    write_cache_file(cachefilename, cache)
 
     check_id
 
   end
 
   def find_contact_group_id(name)
-    cache = load_cache_file('contact_groups')
+    cachefilename = "contact_groups"
+    cachefilename += "-name=#{name}" if name
+
+    cache = load_cache_file(cachefilename)
     if cache.key?(name) then 
       return cache[name]
     end
@@ -450,7 +464,7 @@ class Circonus
       match
     end
 
-    write_cache_file('contact_groups', cache)
+    write_cache_file(cachefilename, cache)
 
     if matched_contact_groups.empty? then
       return nil
@@ -462,7 +476,10 @@ class Circonus
 
 
   def find_graph_ids(title)
-    cache = load_cache_file('graphs')
+    cachefilename = "graphs"
+    cachefilename += "-title=#{title}" if title
+
+    cache = load_cache_file(cachefilename)
     if cache.key?(title) then 
       return cache[title]
     end
@@ -483,7 +500,7 @@ class Circonus
       match
     end
 
-    write_cache_file('graphs', cache)
+    write_cache_file(cachefilename, cache)
     matched_graph_ids = matched_graphs.map { |bundle| bundle['_cid'].gsub('/graph/', '') }
 
   end
