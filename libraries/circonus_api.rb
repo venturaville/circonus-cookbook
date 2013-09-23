@@ -29,6 +29,7 @@ require 'json'
 require 'rest_client'
 require 'uri'
 require 'fileutils'
+require 'cgi'
 
 if RUBY_VERSION =~ /^1\.8/
   class Dir
@@ -292,15 +293,15 @@ class Circonus
   #---------------
 
   def load_cache_file (which)
-    if File.exists?(options[:cache_path] + '/' + which) then
-      return JSON.parse(IO.read(options[:cache_path] + '/' + which))
+    if File.exists?(options[:cache_path] + '/' + CGI.escape(which)) then
+      return JSON.parse(IO.read(options[:cache_path] + '/' + CGI.escape(which)))
     else
       return {}
     end
   end
 
   def write_cache_file (which, data)
-    File.open(options[:cache_path] + '/' + which, 'w') do |file|
+    File.open(options[:cache_path] + '/' + CGI.escape(which), 'w') do |file|
       file.print(JSON.pretty_generate(data))
     end
   end
@@ -397,7 +398,7 @@ class Circonus
     # If no name in cache file, assume a miss
     
     filter = {}
-    filter['name'] = name if name
+    filter['_name'] = name if name
     matched_brokers = list_brokers(filter).find_all do |broker| 
       cache[broker['_name']] = broker['_cid'].gsub('/broker/', '')
       match = broker['_name'] == name
