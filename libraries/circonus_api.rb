@@ -352,7 +352,11 @@ class Circonus
 
     # list_check_bundles is horrifyingly expensive
     # cache all IDS on that target and type, regardless of name
-    matched_bundles = list_check_bundles.find_all do |bundle| 
+    filter = {}
+    filter['target'] = target if target
+    filter['type'] = type if type
+    filter['display_name'] = display_name if display_name
+    matched_bundles = list_check_bundles(filter).find_all do |bundle| 
       match = bundle['target'] == target
 
       if match then
@@ -392,7 +396,9 @@ class Circonus
 
     # If no name in cache file, assume a miss
     
-    matched_brokers = list_brokers.find_all do |broker| 
+    filter = {}
+    filter['name'] = name if name
+    matched_brokers = list_brokers(filter).find_all do |broker| 
       cache[broker['_name']] = broker['_cid'].gsub('/broker/', '')
       match = broker['_name'] == name
 
@@ -457,7 +463,9 @@ class Circonus
 
     # If no name in cache file, assume a miss
     
-    matched_contact_groups = list_contact_groups.find_all do |contact_group| 
+    filter = {}
+    filter['name'] = name if name
+    matched_contact_groups = list_contact_groups(filter).find_all do |contact_group| 
       cache[contact_group['name']] = contact_group['_cid'].gsub('/contact_group/', '')
       match = contact_group['name'] == name
 
@@ -485,7 +493,9 @@ class Circonus
     end
 
     # If no title in cache file, assume a miss
-    matched_graphs = list_graphs.find_all do |graph| 
+    filter = {}
+    filter['title'] = title if title
+    matched_graphs = list_graphs(filter).find_all do |graph| 
       match = graph['title'] == title
 
       # Only cache on a match?
