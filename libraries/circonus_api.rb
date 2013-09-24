@@ -485,5 +485,37 @@ class Circonus
   end
 
 
- 
+  def find_worksheet_ids(title)
+    cachefilename = "worksheets"
+    cachefilename += "-title=#{title}" if title
+
+    cache = load_cache_file(cachefilename)
+    if cache.key?(title) then 
+      return cache[title]
+    end
+
+    # If no title in cache file, assume a miss
+    filter = {}
+    filter['title'] = title if title
+    matched_worksheets = list_worksheets(filter).find_all do |worksheet| 
+      match = worksheet['title'] == title
+
+      # Only cache on a match?
+      if match then
+        cache[worksheet['title']] ||= []
+        id = worksheet['_cid'].gsub('/worksheet/', '')
+        unless cache[worksheet['title']].member?(id) then
+          cache[worksheet['title']] << id
+        end
+      end
+
+      match
+    end
+
+    write_cache_file(cachefilename, cache)
+    matched_worksheet_ids = matched_worksheets.map { |bundle| bundle['_cid'].gsub('/worksheet/', '') }
+
+  end
+
+  
 end
